@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1e88e5" />
+  <title>Food Snap · บันทึกแคลอรี่</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="hero">
+      <div class="hero-top">
+        <div class="brand">
+          <span class="brand-icon">🍱</span>
+          <div>
+            <h1>Food Snap</h1>
+            <p class="sub">ถ่ายรูป · รู้แคลอรี่ · ดูแลตัวเอง</p>
+          </div>
+        </div>
+        <button class="icon-btn" id="btnSettings" aria-label="ตั้งค่า">⚙️</button>
+      </div>
+
+      <div class="date-nav">
+        <button class="nav-btn" id="prevDay" aria-label="วันก่อนหน้า">‹</button>
+        <span id="dateLabel">วันนี้</span>
+        <button class="nav-btn" id="nextDay" aria-label="วันถัดไป">›</button>
+      </div>
+
+      <div class="ring-wrap">
+        <svg class="ring" viewBox="0 0 200 200">
+          <circle class="ring-bg" cx="100" cy="100" r="86" />
+          <circle class="ring-fg" id="ringFg" cx="100" cy="100" r="86" />
+        </svg>
+        <div class="ring-center">
+          <div class="ring-value" id="totalCal">0</div>
+          <div class="ring-unit">kcal</div>
+          <div class="ring-goal">เป้าหมาย <span id="goalCal">2000</span></div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><span class="stat-num" id="remainCal">2000</span><span class="stat-lbl">คงเหลือ</span></div>
+        <div class="stat"><span class="stat-num" id="countMeals">0</span><span class="stat-lbl">รายการ</span></div>
+        <div class="stat"><span class="stat-num" id="pctCal">0%</span><span class="stat-lbl">ของเป้าหมาย</span></div>
+      </div>
+    </header>
+
+    <main>
+      <!-- Capture -->
+      <section class="card capture">
+        <input type="file" id="fileInput" accept="image/*" capture="environment" hidden />
+        <input type="file" id="galleryInput" accept="image/*" hidden />
+        <div class="capture-btns">
+          <button class="btn btn-primary" id="btnCamera">📷 ถ่ายรูปอาหาร</button>
+          <button class="btn btn-soft" id="btnGallery">🖼️ เลือกจากคลัง</button>
+        </div>
+        <button class="link-btn" id="btnManual">✏️ หรือเพิ่มรายการเอง</button>
+
+        <div class="preview" id="preview" hidden>
+          <img id="previewImg" alt="รูปอาหาร" />
+          <div class="loading" id="loading" hidden>
+            <div class="spinner"></div>
+            <p>AI กำลังวิเคราะห์อาหาร...</p>
+          </div>
+        </div>
+
+        <!-- Result -->
+        <div class="result" id="result" hidden>
+          <h3>ผลการวิเคราะห์</h3>
+          <div id="resultItems"></div>
+          <button class="link-btn small" id="btnAddItem">+ เพิ่มรายการ</button>
+          <div class="result-total">รวม <strong id="resultTotal">0</strong> kcal</div>
+          <div class="meal-pick" id="mealPick">
+            <button data-meal="breakfast">🌅 เช้า</button>
+            <button data-meal="lunch">☀️ กลางวัน</button>
+            <button data-meal="dinner">🌙 เย็น</button>
+            <button data-meal="snack">🍪 ของว่าง</button>
+          </div>
+          <div class="result-actions">
+            <button class="btn btn-soft" id="btnCancel">ยกเลิก</button>
+            <button class="btn btn-primary" id="btnSave">💾 บันทึก</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- List -->
+      <section class="list-section">
+        <h2>รายการที่กิน</h2>
+        <div id="entryList" class="entry-list"></div>
+        <div id="emptyState" class="empty">
+          <div class="empty-icon">🥗</div>
+          <p>ยังไม่มีรายการ ลองถ่ายรูปอาหารมื้อแรกดูสิ!</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Settings modal -->
+  <div class="modal" id="settingsModal" hidden>
+    <div class="modal-box">
+      <h2>⚙️ ตั้งค่า</h2>
+      <label>API Key (KKU IntelSphere)
+        <input type="password" id="apiKey" placeholder="sk_..." autocomplete="off" />
+      </label>
+      <p class="hint">คัดลอกคีย์จากหน้า Get started ของ gen.ai.kku.ac.th · คีย์ถูกเก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น (localStorage)</p>
+      <label>Base URL
+        <input type="url" id="baseUrl" placeholder="https://gen.ai.kku.ac.th/api/v1" />
+      </label>
+      <label>โมเดล (ต้องรองรับรูปภาพ)
+        <select id="model">
+          <option value="claude-sonnet-5.5">claude-sonnet-5.5</option>
+        </select>
+      </label>
+      <label>เป้าหมายแคลอรี่ต่อวัน (kcal)
+        <input type="number" id="goal" min="500" max="10000" step="50" />
+      </label>
+      <div class="modal-actions">
+        <button class="btn btn-danger" id="btnClear">🗑️ ล้างข้อมูลทั้งหมด</button>
+        <div class="spacer"></div>
+        <button class="btn btn-soft" id="btnCloseSettings">ปิด</button>
+        <button class="btn btn-primary" id="btnSaveSettings">บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
